@@ -100,6 +100,7 @@ class MapController(private val model: MapModel) {
         }
     }
 
+
     fun getRoute(start: Coordinate, end: Coordinate): List<Coordinate>? {
         return try {
             val url = URL("https://graphhopper.com/api/1/route?point=${start.lat},${start.lon}&point=${end.lat},${end.lon}&vehicle=car&key=$apiKey&instructions=false&points_encoded=false")
@@ -152,6 +153,43 @@ class MapController(private val model: MapModel) {
             null
         }
     }
+
+    fun getRouteInfo(start: Coordinate, end: Coordinate): Pair<Double, Double>? {
+        return try {
+            val apiKey = "43a5fb5f-306c-4957-b1bd-b2c08e18dbc0" // Remplace par ta clé GraphHopper
+            val url = URL("https://graphhopper.com/api/1/route?point=${start.lat},${start.lon}&point=${end.lat},${end.lon}&vehicle=car&key=$apiKey&instructions=false&points_encoded=false")
+
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0")
+
+            val responseCode = connection.responseCode
+            val response = connection.inputStream.bufferedReader().use { it.readText() }
+
+            if (responseCode != 200) {
+                logger.severe("Erreur API GraphHopper : Code $responseCode, Réponse : $response")
+                return null
+            }
+
+            val jsonObject = JSONObject(response)
+            val pathsArray = jsonObject.getJSONArray("paths")
+            if (pathsArray.length() == 0) {
+                logger.warning("Aucun itinéraire trouvé.")
+                return null
+            }
+
+            val pathObject = pathsArray.getJSONObject(0)
+            val distance = pathObject.getDouble("distance") / 1000.0 // Convertir en km
+            val time = pathObject.getDouble("time") / 1000.0 / 60.0 // Convertir en minutes
+
+            logger.info("Distance: ${"%.2f".format(distance)} km, Durée: ${"%.2f".format(time)} min")
+            return Pair(distance, time)
+        } catch (e: Exception) {
+            logger.severe("Erreur lors de la récupération de la distance et du temps : ${e.message}")
+            null
+        }
+    }
+
 
 
 

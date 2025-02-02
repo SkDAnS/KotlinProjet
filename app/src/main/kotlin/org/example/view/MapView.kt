@@ -30,24 +30,38 @@ class MapView(private val mainView: MainView) {
     private var startCityCoord: Coordinate? = null
     private var endCityCoord: Coordinate? = null
     private var mainRoute: List<Coordinate>? = null // Stocke l'itinéraire principal
+    private val infoLabel = JLabel("Distance: -- km | Temps: -- min", SwingConstants.CENTER)
+    private val scrollPane = JScrollPane(stationTable)
 
     init {
         val topPanel = JPanel(BorderLayout())
+
         val btnBack = JButton("← Retour")
         btnBack.preferredSize = Dimension(100, 30)
         btnBack.addActionListener { mainView.showSearch() }
-        topPanel.add(btnBack, BorderLayout.WEST)
+        topPanel.add(btnBack, BorderLayout.WEST) // Bouton retour à gauche
 
         val navButtons = controller.createNavigationButtons()
-        topPanel.add(navButtons, BorderLayout.EAST)
+        topPanel.add(navButtons, BorderLayout.EAST) // Boutons de navigation à droite
 
-        panel.add(topPanel, BorderLayout.NORTH)
-        panel.add(mapViewer, BorderLayout.CENTER)
+        panel.add(topPanel, BorderLayout.NORTH) // `topPanel` en haut
+        panel.add(mapViewer, BorderLayout.CENTER) // Carte au centre
 
-        val scrollPane = JScrollPane(stationTable)
-        panel.add(scrollPane, BorderLayout.SOUTH)
+        // 📌 Création d'un panel vertical pour contenir `infoLabel` et `scrollPane`
+        val bottomContainer = JPanel()
+        bottomContainer.layout = BoxLayout(bottomContainer, BoxLayout.Y_AXIS) // Affichage en colonne
+        bottomContainer.add(infoLabel) // Ajout du `infoLabel`
+        bottomContainer.add(scrollPane) // Ajout du tableau des stations
 
-        // Déplacement de la carte avec la souris
+        panel.add(bottomContainer, BorderLayout.SOUTH) // Ajout en bas sous la carte
+
+
+
+
+
+
+
+    // Déplacement de la carte avec la souris
         mapViewer.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 lastMousePoint = e.point
@@ -96,13 +110,26 @@ class MapView(private val mainView: MainView) {
         val startCoord = controller.getCityCoordinates(startCity)
         val endCoord = controller.getCityCoordinates(endCity)
 
+
+
         if (startCoord == null || endCoord == null) {
             JOptionPane.showMessageDialog(null, "Une ou plusieurs villes sont introuvables.", "Erreur", JOptionPane.ERROR_MESSAGE)
             return
         }
 
+
+
         startCityCoord = startCoord
         endCityCoord = endCoord
+
+        val routeInfo = controller.getRouteInfo(startCoord, endCoord)
+        val distanceKm = routeInfo?.first ?: 0.0
+        val estimatedTimeMin = routeInfo?.second ?: 0.0
+
+// Mettre à jour le texte du label
+        infoLabel.text = "Distance: ${"%.2f".format(distanceKm)} km | Temps: ${"%.2f".format(estimatedTimeMin)} min"
+
+
 
         val route = controller.getRoute(startCoord, endCoord)
         if (route.isNullOrEmpty()) {
@@ -118,26 +145,44 @@ class MapView(private val mainView: MainView) {
         val filteredStations = allStations.filter { station ->
             val fuelMatch = when (fuelType) {
                 "Tous" -> true
-                else -> listOf(
-                    station.price_gazole, station.price_sp95, station.price_sp98,
-                    station.price_e10, station.price_e85, station.price_gplc
-                ).any { it != null }
+                "Gazole" -> station.price_gazole != null
+                "SP95" -> station.price_sp95 != null
+                "SP98" -> station.price_sp98 != null
+                "E10" -> station.price_e10 != null
+                "E85" -> station.price_e85 != null
+                "GPLc" -> station.price_gplc != null
+                else -> false
             }
 
-            val storeMatch = if (hasStore) station.services?.contains("Boutique", ignoreCase = true) == true else true
-            val toiletMatch = if (hasToilets) station.services?.contains("Toilettes", ignoreCase = true) == true else true
+            val storeMatch = !hasStore || (station.services?.contains("Boutique", ignoreCase = true) == true)
+            val toiletMatch = !hasToilets || (station.services?.contains("Toilettes", ignoreCase = true) == true)
 
-            val nearRouteOrCities = station.geo_point?.let { isNearRouteOrCities(it, route, startCoord, endCoord, 50.0) } ?: false
+            val nearRouteOrCities = station.geo_point?.let {
+                isNearRouteOrCities(it, route, startCoord, endCoord, 50.0)
+            } ?: false
 
+            // L'instruction finale assure que toutes les conditions sélectionnées sont respectées simultanément
             fuelMatch && storeMatch && toiletMatch && nearRouteOrCities
         }
 
+
         val columns = arrayOf("Nom", "Adresse", "Ville", "Prix Gazole", "Prix SP95", "Prix SP98", "Prix E10", "Prix E85", "Prix GPLc")
         val data = filteredStations.map {
-            arrayOf(it.name, it.address, it.com_arm_name, it.price_gazole, it.price_sp95, it.price_sp98, it.price_e10, it.price_e85, it.price_gplc)
+            arrayOf(
+                it.name,
+                it.address,
+                it.com_arm_name,
+                multiplyPrice(it.price_gazole),
+                multiplyPrice(it.price_sp95),
+                multiplyPrice(it.price_sp98),
+                multiplyPrice(it.price_e10),
+                multiplyPrice(it.price_e85),
+                multiplyPrice(it.price_gplc)
+            )
         }.toTypedArray()
 
         stationTableModel.setDataVector(data, columns)
+
 
         mapViewer.mapMarkerList.clear()
 
@@ -201,6 +246,16 @@ class MapView(private val mainView: MainView) {
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return R * c // Retourne la distance en kilomètres
     }
+
+    private fun multiplyPrice(price: Any?): String {
+        return when (price) {
+            is String -> price.toDoubleOrNull()?.times(1000)?.let { "%.3f €".format(it) } ?: "N/A"
+            is Double -> "%.3f €".format(price * 1000)
+            is Number -> "%.3f €".format(price.toDouble() * 1000)
+            else -> "N/A"
+        }
+    }
+
 
 
     fun getPanel(): JPanel = panel
