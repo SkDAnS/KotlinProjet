@@ -1,6 +1,6 @@
 package org.example.view
 
-import MapView
+
 import javax.swing.*
 import java.awt.*
 
@@ -39,11 +39,9 @@ class MainView {
         cardLayout.show(panelContainer, "SEARCH")
     }
 
-    fun showMap(startCity: String, endCity: String) {
-
-
+    fun showMap(startCity: String, endCity: String, fuelType: String, hasStore: Boolean, hasToilets: Boolean) {
         val mapView = MapView(this)
-        mapView.updateCities(startCity, endCity)
+        mapView.updateCities(startCity, endCity, fuelType, hasStore, hasToilets)
         panelContainer.add(mapView.getPanel(), "MAP")
         cardLayout.show(panelContainer, "MAP")
     }

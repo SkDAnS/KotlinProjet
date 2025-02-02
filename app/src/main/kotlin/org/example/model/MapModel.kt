@@ -35,5 +35,11 @@ class MapModel {
         mapViewer.setDisplayPosition(Coordinate(lat, lon), 10) // Zoom 10 par défaut
         logger.info("Carte centrée sur : ($lat, $lon)")
     }
+
+
+
+
+
+
 }
 
