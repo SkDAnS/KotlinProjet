@@ -1,7 +1,6 @@
 package org.example.controller
 
 import org.example.model.MapModel
-import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionListener
@@ -11,9 +10,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
 import org.json.JSONArray
-import java.awt.GridLayout
-import javax.swing.JButton
-import javax.swing.JPanel
+import java.awt.*
+import javax.swing.*
 
 class MapController(private val model: MapModel) {
     private val logger: Logger = Logger.getLogger(MapController::class.java.name)
@@ -31,31 +29,55 @@ class MapController(private val model: MapModel) {
     }
 
     fun createNavigationButtons(): JPanel {
-        val controlPanel = JPanel(GridLayout(3, 3))
-        val btnUp = JButton("↑")
-        val btnDown = JButton("↓")
-        val btnLeft = JButton("←")
-        val btnRight = JButton("→")
+        val controlPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.X_AXIS)
+            background = Color.LIGHT_GRAY
+            border = BorderFactory.createEmptyBorder(0, 10, 0, 10)
 
-        // Actions des boutons
-        btnUp.addActionListener { panMap(0.5, 0.0) }
-        btnDown.addActionListener { panMap(-0.5, 0.0) }
-        btnLeft.addActionListener { panMap(0.0, -0.5) }
-        btnRight.addActionListener { panMap(0.0, 0.5) }
+            // Définir une taille carrée pour chaque bouton
+            val buttonSize = Dimension(40, 40)
 
-        // Ajout des boutons
-        controlPanel.add(JPanel())
-        controlPanel.add(btnUp)
-        controlPanel.add(JPanel())
-        controlPanel.add(btnLeft)
-        controlPanel.add(JPanel())
-        controlPanel.add(btnRight)
-        controlPanel.add(JPanel())
-        controlPanel.add(btnDown)
-        controlPanel.add(JPanel())
+            val directions = listOf("↑", "←", "↓", "→")
+            directions.forEach { dir ->
+                val button = JButton(dir).apply {
+                    preferredSize = buttonSize
+                    minimumSize = buttonSize
+                    maximumSize = buttonSize
+                    font = Font("Arial", Font.BOLD, 20)
+                    foreground = Color.WHITE
+                    background = Color.GRAY
+                    border = BorderFactory.createLineBorder(Color.WHITE, 2)
+                    isFocusPainted = false
+
+                    // Changement de couleur au survol
+                    addMouseListener(object : java.awt.event.MouseAdapter() {
+                        override fun mouseEntered(e: java.awt.event.MouseEvent) {
+                            background = Color.DARK_GRAY
+                        }
+
+                        override fun mouseExited(e: java.awt.event.MouseEvent) {
+                            background = Color.GRAY
+                        }
+                    })
+                }
+
+                // Ajouter l’action associée
+                when (dir) {
+                    "↑" -> button.addActionListener { panMap(0.5, 0.0) }
+                    "←" -> button.addActionListener { panMap(0.0, -0.5) }
+                    "↓" -> button.addActionListener { panMap(-0.5, 0.0) }
+                    "→" -> button.addActionListener { panMap(0.0, 0.5) }
+                }
+
+                add(button)
+                add(Box.createHorizontalStrut(5)) // Espacement entre les boutons
+            }
+        }
 
         return controlPanel
     }
+
+
 
 
 

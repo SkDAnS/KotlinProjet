@@ -20,39 +20,109 @@ import kotlin.math.*
 class MapView(private val mainView: MainView) {
     private val model = MapModel()
     private val controller = MapController(model)
-    private val panel = JPanel(BorderLayout())
+    private val panel = JPanel(BorderLayout()).apply {
+        background = Color.LIGHT_GRAY
+        border = BorderFactory.createLineBorder(Color.DARK_GRAY, 10)
+    }
     private val mapViewer = model.mapViewer
     private val stationTableModel = DefaultTableModel()
-    private val stationTable = JTable(stationTableModel)
+    private val stationTable = JTable(stationTableModel).apply {
+
+        rowHeight = 25
+        background = Color.LIGHT_GRAY
+        foreground = Color.BLACK
+        gridColor = Color.DARK_GRAY
+    }
+
+
     private val logger: Logger = LogManager.getLogger(MapView::class.java)
 
     private var lastMousePoint: Point? = null
     private var startCityCoord: Coordinate? = null
     private var endCityCoord: Coordinate? = null
     private var mainRoute: List<Coordinate>? = null // Stocke l'itinéraire principal
-    private val infoLabel = JLabel("Distance: -- km | Temps: -- min", SwingConstants.CENTER)
-    private val scrollPane = JScrollPane(stationTable)
+    private val infoLabel = JLabel("\t Distance: -- km | Temps: -- min \t", SwingConstants.CENTER).apply {
+        font = Font("Impact", Font.ROMAN_BASELINE, 20)
+        foreground = Color.BLACK
+        border = BorderFactory.createEmptyBorder(10, 100, 10, 100)
+        background = Color.LIGHT_GRAY
+        isOpaque = true
+
+    }
+    private val scrollPane = JScrollPane(stationTable).apply {
+        background = Color.LIGHT_GRAY
+        border = BorderFactory.createLineBorder(Color.DARK_GRAY)
+    }
 
     init {
-        val topPanel = JPanel(BorderLayout())
+        val topPanel = JPanel(BorderLayout()).apply {
+            background = Color.LIGHT_GRAY
+            border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
 
-        val btnBack = JButton("← Retour")
-        btnBack.preferredSize = Dimension(100, 30)
-        btnBack.addActionListener { mainView.showSearch() }
-        topPanel.add(btnBack, BorderLayout.WEST)
+            // Adapter le bouton retour à la largeur
+            val btnBack = JButton("← Retour").apply {
+                preferredSize = Dimension(150, 40)
+                font = Font("Arial", Font.BOLD, 14)
+                foreground = Color.WHITE
+                background = Color.GRAY
+                border = BorderFactory.createLineBorder(Color.WHITE, 2)
+                isFocusPainted = false
 
-        val navButtons = controller.createNavigationButtons()
-        topPanel.add(navButtons, BorderLayout.EAST)
+                // Changement de couleur au survol
+                addMouseListener(object : java.awt.event.MouseAdapter() {
+                    override fun mouseEntered(e: java.awt.event.MouseEvent) {
+                        background = Color.DARK_GRAY
+                    }
+
+                    override fun mouseExited(e: java.awt.event.MouseEvent) {
+                        background = Color.GRAY
+                    }
+                })
+            }
+            btnBack.addActionListener { mainView.showSearch() }
+
+            // Conteneur du bouton retour, aligné à gauche
+            val backContainer = JPanel(BorderLayout()).apply {
+                background = Color.LIGHT_GRAY
+                add(btnBack, BorderLayout.WEST)
+            }
+            add(backContainer, BorderLayout.WEST)
+
+            // Conteneur pour les boutons flèches alignés à droite
+            val controller = MapController(model)
+            val navButtons = controller.createNavigationButtons()
+
+
+
+            add(navButtons, BorderLayout.EAST)
+
+            // Centrer le label info
+            val infoLabelContainer = JPanel().apply {
+                background = Color.LIGHT_GRAY
+                layout = BorderLayout()
+                add(infoLabel, BorderLayout.CENTER)
+            }
+            add(infoLabelContainer, BorderLayout.CENTER)
+        }
 
         panel.add(topPanel, BorderLayout.NORTH)
-        panel.add(mapViewer, BorderLayout.CENTER)
 
+        val mapPanel = JPanel(BorderLayout()).apply {
+            background = Color.LIGHT_GRAY
+            border = BorderFactory.createLineBorder(Color.DARK_GRAY)
+            preferredSize = Dimension(900, 900) // Augmente la taille de la carte
+            add(mapViewer, BorderLayout.CENTER)
+        }
+        panel.add(mapPanel, BorderLayout.CENTER)
 
-        val bottomContainer = JPanel()
-        bottomContainer.layout = BoxLayout(bottomContainer, BoxLayout.Y_AXIS)
-        bottomContainer.add(infoLabel)
-        bottomContainer.add(scrollPane)
-
+        val bottomContainer = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            background = Color.LIGHT_GRAY
+            border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            add(infoLabel)
+            add(Box.createRigidArea(Dimension(0, 10))) // Espace entre le label et le tableau
+            add(scrollPane)
+        }
         panel.add(bottomContainer, BorderLayout.SOUTH)
 
 
@@ -153,16 +223,17 @@ class MapView(private val mainView: MainView) {
                 else -> false
             }
 
-            val storeMatch = !hasStore || (station.services?.contains("Boutique", ignoreCase = true) == true)
-            val toiletMatch = !hasToilets || (station.services?.contains("Toilettes", ignoreCase = true) == true)
+            val storeMatch = if (!hasStore || (station.services?.contains("Boutique", ignoreCase = true) == true)) "✔" else "✖"
+            val toiletMatch = if (!hasToilets || (station.services?.contains("Toilettes", ignoreCase = true) == true)) "✔" else "✖"
 
             val nearRouteOrCities = station.geo_point?.let {
                 isNearRouteOrCities(it, route, startCoord, endCoord, 50.0)
             } ?: false
 
-            // verifie les condition
-            fuelMatch && storeMatch && toiletMatch && nearRouteOrCities
+            // verifie les conditions
+            fuelMatch && (storeMatch == "✔") && (toiletMatch == "✔") && nearRouteOrCities
         }
+
 
 
         val columns = arrayOf(
@@ -187,6 +258,9 @@ class MapView(private val mainView: MainView) {
         }.toTypedArray()
 
         stationTableModel.setDataVector(data, columns)
+
+
+
 
 
         mapViewer.mapMarkerList.clear()
