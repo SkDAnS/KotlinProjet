@@ -6,7 +6,7 @@ import java.awt.*
 class MapPolyline(route: List<Coordinate>) : MapPolygonImpl(null, "", route) {
     init {
         color = Color.BLUE
-        backColor = Color(255, 0, 0, 0)  // Rouge avec transparence légère
+        backColor = Color(255, 0, 0, 0)
         stroke = BasicStroke(3.0f)
     }
 

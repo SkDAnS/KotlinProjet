@@ -39,21 +39,21 @@ class MapView(private val mainView: MainView) {
         val btnBack = JButton("← Retour")
         btnBack.preferredSize = Dimension(100, 30)
         btnBack.addActionListener { mainView.showSearch() }
-        topPanel.add(btnBack, BorderLayout.WEST) // Bouton retour à gauche
+        topPanel.add(btnBack, BorderLayout.WEST)
 
         val navButtons = controller.createNavigationButtons()
-        topPanel.add(navButtons, BorderLayout.EAST) // Boutons de navigation à droite
+        topPanel.add(navButtons, BorderLayout.EAST)
 
-        panel.add(topPanel, BorderLayout.NORTH) // `topPanel` en haut
-        panel.add(mapViewer, BorderLayout.CENTER) // Carte au centre
+        panel.add(topPanel, BorderLayout.NORTH)
+        panel.add(mapViewer, BorderLayout.CENTER)
 
-        // 📌 Création d'un panel vertical pour contenir `infoLabel` et `scrollPane`
+
         val bottomContainer = JPanel()
-        bottomContainer.layout = BoxLayout(bottomContainer, BoxLayout.Y_AXIS) // Affichage en colonne
-        bottomContainer.add(infoLabel) // Ajout du `infoLabel`
-        bottomContainer.add(scrollPane) // Ajout du tableau des stations
+        bottomContainer.layout = BoxLayout(bottomContainer, BoxLayout.Y_AXIS)
+        bottomContainer.add(infoLabel)
+        bottomContainer.add(scrollPane)
 
-        panel.add(bottomContainer, BorderLayout.SOUTH) // Ajout en bas sous la carte
+        panel.add(bottomContainer, BorderLayout.SOUTH)
 
 
 
@@ -126,7 +126,6 @@ class MapView(private val mainView: MainView) {
         val distanceKm = routeInfo?.first ?: 0.0
         val estimatedTimeMin = routeInfo?.second ?: 0.0
 
-// Mettre à jour le texte du label
         infoLabel.text = "Distance: ${"%.2f".format(distanceKm)} km | Temps: ${"%.2f".format(estimatedTimeMin)} min"
 
 
@@ -137,7 +136,7 @@ class MapView(private val mainView: MainView) {
             return
         }
 
-        mainRoute = route // Stocke l'itinéraire principal
+        mainRoute = route // stocker l'itinéraire principal
 
         val allStations = (fetchRecentStations(startCity) + fetchRecentStations(endCity))
             .distinctBy { "${it.address}-${it.com_arm_name}" }
@@ -161,12 +160,16 @@ class MapView(private val mainView: MainView) {
                 isNearRouteOrCities(it, route, startCoord, endCoord, 50.0)
             } ?: false
 
-            // L'instruction finale assure que toutes les conditions sélectionnées sont respectées simultanément
+            // verifie les condition
             fuelMatch && storeMatch && toiletMatch && nearRouteOrCities
         }
 
 
-        val columns = arrayOf("Nom", "Adresse", "Ville", "Prix Gazole", "Prix SP95", "Prix SP98", "Prix E10", "Prix E85", "Prix GPLc")
+        val columns = arrayOf(
+            "Nom", "Adresse", "Ville", "Prix Gazole", "Prix SP95", "Prix SP98",
+            "Prix E10", "Prix E85", "Prix GPLc", "Toilettes", "Magasin"
+        )
+
         val data = filteredStations.map {
             arrayOf(
                 it.name,
@@ -177,7 +180,9 @@ class MapView(private val mainView: MainView) {
                 multiplyPrice(it.price_sp98),
                 multiplyPrice(it.price_e10),
                 multiplyPrice(it.price_e85),
-                multiplyPrice(it.price_gplc)
+                multiplyPrice(it.price_gplc),
+                if (it.services?.contains("Toilettes", ignoreCase = true) == true) "✔" else "✖",
+                if (it.services?.contains("Boutique", ignoreCase = true) == true) "✔" else "✖"
             )
         }.toTypedArray()
 

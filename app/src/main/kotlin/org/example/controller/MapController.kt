@@ -17,24 +17,9 @@ import javax.swing.JPanel
 
 class MapController(private val model: MapModel) {
     private val logger: Logger = Logger.getLogger(MapController::class.java.name)
-    private val apiKey = "43a5fb5f-306c-4957-b1bd-b2c08e18dbc0"// 🔑 Remplace par ta clé OpenRouteService
+    private val apiKey = "43a5fb5f-306c-4957-b1bd-b2c08e18dbc0"
 
-    inner class MouseDragHandler : MouseAdapter(), MouseMotionListener {
-        private var lastPoint: Point? = null
 
-        override fun mousePressed(e: MouseEvent) {
-            lastPoint = e.point
-        }
-
-        override fun mouseDragged(e: MouseEvent) {
-            lastPoint?.let {
-                val dx = it.x - e.x
-                val dy = it.y - e.y
-                model.moveMapByPixels(dx, dy)
-            }
-            lastPoint = e.point
-        }
-    }
 
     fun panMap(latChange: Double, lonChange: Double) {
         val currentPosition = model.mapViewer.position
@@ -58,16 +43,16 @@ class MapController(private val model: MapModel) {
         btnLeft.addActionListener { panMap(0.0, -0.5) }
         btnRight.addActionListener { panMap(0.0, 0.5) }
 
-        // Ajout des boutons au panneau
-        controlPanel.add(JPanel()) // Espace vide
+        // Ajout des boutons
+        controlPanel.add(JPanel())
         controlPanel.add(btnUp)
-        controlPanel.add(JPanel()) // Espace vide
+        controlPanel.add(JPanel())
         controlPanel.add(btnLeft)
-        controlPanel.add(JPanel()) // Espace vide
+        controlPanel.add(JPanel())
         controlPanel.add(btnRight)
-        controlPanel.add(JPanel()) // Espace vide
+        controlPanel.add(JPanel())
         controlPanel.add(btnDown)
-        controlPanel.add(JPanel()) // Espace vide
+        controlPanel.add(JPanel())
 
         return controlPanel
     }
@@ -118,10 +103,10 @@ class MapController(private val model: MapModel) {
 
             val jsonObject = JSONObject(response)
 
-            // 📌 Affichage complet de la réponse pour le debugging
+
             logger.info("Réponse complète de GraphHopper: $jsonObject")
 
-            // 📌 Vérifier si "paths" est présent
+
             if (!jsonObject.has("paths")) {
                 logger.severe("GraphHopper ne contient pas de 'paths'. Réponse : $jsonObject")
                 return null
@@ -135,7 +120,7 @@ class MapController(private val model: MapModel) {
 
             val coordinatesList = mutableListOf<Coordinate>()
 
-            // 📌 CORRECTION ICI : "points" est un objet contenant "coordinates"
+            //"points" est un objet contenant "coordinates"
             val pointsObject = pathsArray.getJSONObject(0).getJSONObject("points")
             val pointsArray = pointsObject.getJSONArray("coordinates")
 

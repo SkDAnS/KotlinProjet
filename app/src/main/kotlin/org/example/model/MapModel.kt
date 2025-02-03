@@ -11,17 +11,10 @@ class MapModel {
     val mapViewer: JMapViewer = JMapViewer().apply {
         zoom = 3
         setTileSource(org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource.Mapnik())
-        setDisplayPosition(Coordinate(48.8566, 2.3522), zoom) // Centre sur Paris
+        setDisplayPosition(Coordinate(48.8566, 2.3522), zoom)
     }
 
-    fun panMap(latChange: Double, lonChange: Double) {
-        val currentPosition = mapViewer.position
-        val newLat = currentPosition.lat + latChange
-        val newLon = currentPosition.lon + lonChange
-        mapViewer.setDisplayPosition(Coordinate(newLat, newLon), mapViewer.zoom)
 
-        logger.info("Carte déplacée vers Lat: $newLat, Lon: $newLon")
-    }
 
     fun moveMapByPixels(dx: Int, dy: Int) {
         val viewport = mapViewer.size
@@ -32,7 +25,7 @@ class MapModel {
     }
 
     fun centerMap(lat: Double, lon: Double) {
-        mapViewer.setDisplayPosition(Coordinate(lat, lon), 10) // Zoom 10 par défaut
+        mapViewer.setDisplayPosition(Coordinate(lat, lon), 10)
         logger.info("Carte centrée sur : ($lat, $lon)")
     }
 

@@ -13,7 +13,7 @@ class HomeView(private val mainView: MainView) {
         val btnEnter = JButton("Entrer")
         btnEnter.preferredSize = Dimension(100, 50)
         btnEnter.addActionListener {
-            mainView.showSearch() // Aller à la page de recherche
+            mainView.showSearch()
         }
 
         val buttonPanel = JPanel()
