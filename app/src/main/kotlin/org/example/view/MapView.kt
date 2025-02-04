@@ -27,12 +27,12 @@ class MapView(private val mainView: MainView) {
     private val mapViewer = model.mapViewer
     private val stationTableModel = DefaultTableModel()
     private val stationTable = JTable(stationTableModel).apply {
-
-        rowHeight = 25
+        rowHeight = 20  // Réduit la hauteur des lignes
         background = Color.LIGHT_GRAY
         foreground = Color.BLACK
         gridColor = Color.DARK_GRAY
     }
+
 
 
     private val logger: Logger = LogManager.getLogger(MapView::class.java)
@@ -52,7 +52,9 @@ class MapView(private val mainView: MainView) {
     private val scrollPane = JScrollPane(stationTable).apply {
         background = Color.LIGHT_GRAY
         border = BorderFactory.createLineBorder(Color.DARK_GRAY)
+        preferredSize = Dimension(900, 200) // Réduction de la hauteur du tableau
     }
+
 
     init {
         val topPanel = JPanel(BorderLayout()).apply {
@@ -110,9 +112,10 @@ class MapView(private val mainView: MainView) {
         val mapPanel = JPanel(BorderLayout()).apply {
             background = Color.LIGHT_GRAY
             border = BorderFactory.createLineBorder(Color.DARK_GRAY)
-            preferredSize = Dimension(900, 900) // Augmente la taille de la carte
+            preferredSize = Dimension(900, 1100) // Augmenter la hauteur de la carte
             add(mapViewer, BorderLayout.CENTER)
         }
+
         panel.add(mapPanel, BorderLayout.CENTER)
 
         val bottomContainer = JPanel().apply {
@@ -280,6 +283,7 @@ class MapView(private val mainView: MainView) {
         mapViewer.mapMarkerList.add(MapMarkerDot(endCity, endCoord).apply { backColor = Color.RED })
 
         val polyline = MapPolyline(route)
+
         mapViewer.addMapPolygon(polyline)
     }
 

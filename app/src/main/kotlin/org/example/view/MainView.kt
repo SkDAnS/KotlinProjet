@@ -24,7 +24,7 @@ class MainView {
             frame.layout = BorderLayout()
             frame.setSize(600, 800)
             frame.isResizable = false
-            frame.background = darkGray // Fond sombre
+            frame.background = darkGray // Fond sombrezz
 
             val homeView = HomeView(this)
             val searchView = SearchView(this)
