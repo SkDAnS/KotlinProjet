@@ -21,7 +21,7 @@ class HomeView(private val mainView: MainView) {
         val originalImage = ImageIcon(imageURL).image
 
         // 🎨 Définir une échelle initiale de 90%
-        val initialScaleFactor = 0.8
+        val initialScaleFactor = 1.2
 
         // 🎨 Ajouter un écouteur pour ajuster la taille de l'image lorsque le panel change de taille
         panel.addComponentListener(object : ComponentAdapter() {
@@ -39,13 +39,6 @@ class HomeView(private val mainView: MainView) {
             }
         })
 
-        // 🎨 Ajouter un titre en haut
-        val title = JLabel("CarbuMap").apply {
-            font = Font("Impact", Font.BOLD, 50)
-            foreground = Color.BLACK
-            horizontalAlignment = SwingConstants.CENTER
-            border = BorderFactory.createEmptyBorder(10, 0, 10, 0)
-        }
 
         // 🎨 Bouton en gris
         val btnEnter = JButton("Entrer").apply {
@@ -81,7 +74,7 @@ class HomeView(private val mainView: MainView) {
         panel.apply {
             background = Color.LIGHT_GRAY
             border = BorderFactory.createLineBorder(Color.DARK_GRAY, 10)
-            add(title, BorderLayout.NORTH)
+
             add(label, BorderLayout.CENTER)
             add(buttonPanel, BorderLayout.SOUTH)
         }

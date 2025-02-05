@@ -5,7 +5,7 @@ import java.awt.*
 import javax.swing.border.EmptyBorder
 
 class MainView {
-    private val frame = JFrame("Carbu-Pomme \uD83C\uDF4E")
+    private val frame = JFrame("CarbuMap")
     private val cardLayout = CardLayout()
     private val panelContainer = JPanel(cardLayout)
     private val menuPanel = JPanel(GridLayout(4, 1, 5, 5)) // Menu latéral
