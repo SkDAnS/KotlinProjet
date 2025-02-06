@@ -12,6 +12,9 @@ repositories {
 }
 
 dependencies {
+
+
+
     // 🚀 Kotlin Standard Library
     implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.0")
 
@@ -29,6 +32,10 @@ dependencies {
     // 🛠️ Logging avec Log4j (Meilleur que println)
     implementation("org.apache.logging.log4j:log4j-core:2.17.2")
     implementation("org.apache.logging.log4j:log4j-api:2.17.2")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+
+
 }
 
 kotlin {

@@ -59,7 +59,7 @@ class MainView {
 
         val homeButton = createMenuButton("Accueil") { showHome() }
         val searchButton = createMenuButton("Recherche") { showSearch() }
-        val mapButton = createMenuButton("Carte") { showMap("Paris", "Lyon", "Tous", false, false) }
+        val mapButton = createMenuButton("Carte") { showMap("", "", "Tous", false, false) }
 
         listOf(homeButton, searchButton, mapButton).forEach { button ->
             button.preferredSize = Dimension(buttonWidth, buttonHeight)

@@ -4,10 +4,12 @@ import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.google.gson.Gson
 import org.example.model.FuelStation
+import org.json.JSONArray
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.io.File
 import java.io.FileInputStream
+import java.net.URLEncoder
 import java.util.zip.ZipInputStream
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -25,7 +27,10 @@ fun fetchRecentStations(city: String): List<FuelStation> {
     val (_, _, result) = url.httpGet().responseObject(FuelStation.Deserializer())
 
     return result.fold(
-        success = { it.records.map { record -> record.fields } },
+        success = { it.records.map { record ->
+            val station = record.fields
+            station
+        } },
         failure = {
             logger.error("Échec de récupération depuis Opendatasoft, tentative avec Roulez-Éco...")
             fetchBackupStations(city)
@@ -120,7 +125,7 @@ fun parseXmlStations(xmlFile: File, city: String): List<FuelStation> {
 
             stations.add(
                 FuelStation(
-                    name = "Station inconnue",
+                    name = "Station",
                     address = adresse,
                     com_arm_name = ville,
                     price_gazole = priceMap["Gazole"],
@@ -138,6 +143,37 @@ fun parseXmlStations(xmlFile: File, city: String): List<FuelStation> {
 
     return stations
 }
+
+
+
+fun getCoordinatesFromAddress(address: String?, city: String?): List<Double>? {
+    if (address.isNullOrBlank() || city.isNullOrBlank()) return null
+
+    val formattedAddress = URLEncoder.encode("$address, $city, France", "UTF-8")
+    val url = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=0&q=$formattedAddress"
+
+
+    val (_, _, result) = url.httpGet().responseString()
+
+    return result.fold(
+        success = { responseBody ->
+            val jsonArray = JSONArray(responseBody)
+            if (jsonArray.length() > 0) {
+                val jsonObject = jsonArray.getJSONObject(0)
+                val lat = jsonObject.getDouble("lat")
+                val lon = jsonObject.getDouble("lon")
+                listOf(lat, lon)
+            } else {
+                null
+            }
+        },
+        failure = {
+            logger.error("❌ Impossible d'obtenir les coordonnées pour l'adresse : $address, $city")
+            null
+        }
+    )
+}
+
 
 // Fonction pour extraire la valeur d'un tag XML
 fun getTagValue(tag: String, element: Element): String? {

@@ -2,6 +2,7 @@ package org.example.model
 
 import org.openstreetmap.gui.jmapviewer.Coordinate
 import org.openstreetmap.gui.jmapviewer.JMapViewer
+import org.openstreetmap.gui.jmapviewer.interfaces.MapObject
 import java.awt.Point
 import java.util.logging.Logger
 
@@ -13,6 +14,7 @@ class MapModel {
         setTileSource(org.openstreetmap.gui.jmapviewer.tilesources.OsmTileSource.Mapnik())
         setDisplayPosition(Coordinate(48.8566, 2.3522), zoom)
     }
+
 
 
 

@@ -1,5 +1,6 @@
 package org.example.view
 
+import kotlinx.coroutines.*
 import org.example.controller.MapController
 import org.example.model.MapModel
 import org.openstreetmap.gui.jmapviewer.Coordinate
@@ -13,8 +14,10 @@ import java.awt.event.MouseMotionListener
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.example.api.fetchRecentStations
+import org.example.api.getCoordinatesFromAddress
 import org.example.view.MainView
 import org.example.view.MapPolyline
+import java.util.concurrent.Semaphore
 import kotlin.math.*
 
 class MapView(private val mainView: MainView) {
@@ -32,6 +35,7 @@ class MapView(private val mainView: MainView) {
         foreground = Color.BLACK
         gridColor = Color.DARK_GRAY
     }
+
 
 
 
@@ -199,7 +203,9 @@ class MapView(private val mainView: MainView) {
         val distanceKm = routeInfo?.first ?: 0.0
         val estimatedTimeMin = routeInfo?.second ?: 0.0
 
-        infoLabel.text = "Distance: ${"%.2f".format(distanceKm)} km | Temps: ${"%.2f".format(estimatedTimeMin)} min"
+        val hours = (estimatedTimeMin / 60).toInt()
+        val minutes = (estimatedTimeMin % 60).toInt()
+        infoLabel.text = "Distance : ${"%.2f".format(distanceKm)} km | Temps : ${hours}h ${minutes}min"
 
 
 
@@ -213,6 +219,37 @@ class MapView(private val mainView: MainView) {
 
         val allStations = (fetchRecentStations(startCity) + fetchRecentStations(endCity))
             .distinctBy { "${it.address}-${it.com_arm_name}" }
+        val stationsSansCoord = allStations.filter { it.geo_point == null }
+        logger.info(" ${stationsSansCoord.size} stations sans coordonnées trouvées")
+
+        if (stationsSansCoord.isNotEmpty()) {
+            val semaphore = Semaphore(3)
+
+            runBlocking {
+                supervisorScope {
+                    stationsSansCoord.chunked(3).forEach { chunk ->
+                        val jobs = chunk.map { station ->
+                            async(Dispatchers.IO) {
+                                semaphore.acquire()
+                                try {
+
+                                    val coords = getCoordinatesFromAddress(station.address, station.com_arm_name)
+                                    if (coords != null) {
+                                        station.geo_point = coords
+
+                                    } else {
+                                        logger.warn(" Aucune donnée pour : ${station.address}, ${station.com_arm_name}")
+                                    }
+                                } finally {
+                                    semaphore.release()
+                                }
+                            }
+                        }
+                        jobs.awaitAll()
+                    }
+                }
+            }
+        }
 
         val filteredStations = allStations.filter { station ->
             val fuelMatch = when (fuelType) {
@@ -271,7 +308,7 @@ class MapView(private val mainView: MainView) {
         for (station in filteredStations) {
             station.geo_point?.let { coords ->
                 if (coords.size >= 2) {
-                    val stationMarker = MapMarkerDot(station.name ?: "Station", Coordinate(coords[0], coords[1]))
+                    val stationMarker = MapMarkerDot(station.name ?: station.address, Coordinate(coords[0], coords[1]))
                     stationMarker.backColor = Color.GREEN
                     mapViewer.mapMarkerList.add(stationMarker)
                 }

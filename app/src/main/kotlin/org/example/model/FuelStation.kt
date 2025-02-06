@@ -17,7 +17,7 @@ data class FuelStation(
     val price_e85: Double?,
     val price_gplc: Double?,
     val services: String?,
-    val geo_point: List<Double>?
+    var geo_point: List<Double>?
 ) {
     class Deserializer : ResponseDeserializable<FuelResponse> {
         override fun deserialize(content: String): FuelResponse = Gson().fromJson(content, FuelResponse::class.java)
