@@ -217,7 +217,7 @@ class MapView(private val mainView: MainView) {
 
         mainRoute = route // stocker l'itinéraire principal
 
-        val allStations = (fetchRecentStations(startCity) + fetchRecentStations(endCity))
+        var allStations = (fetchRecentStations(startCity) + fetchRecentStations(endCity))
             .distinctBy { "${it.address}-${it.com_arm_name}" }
         val stationsSansCoord = allStations.filter { it.geo_point == null }
         logger.info(" ${stationsSansCoord.size} stations sans coordonnées trouvées")
@@ -249,6 +249,7 @@ class MapView(private val mainView: MainView) {
                     }
                 }
             }
+            allStations = allStations.filter { it.geo_point != null }.toMutableList()
         }
 
         val filteredStations = allStations.filter { station ->
