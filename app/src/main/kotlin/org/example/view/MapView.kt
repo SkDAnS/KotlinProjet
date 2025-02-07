@@ -30,7 +30,7 @@ class MapView(private val mainView: MainView) {
     private val mapViewer = model.mapViewer
     private val stationTableModel = DefaultTableModel()
     private val stationTable = JTable(stationTableModel).apply {
-        rowHeight = 20  // Réduit la hauteur des lignes
+        rowHeight = 20
         background = Color.LIGHT_GRAY
         foreground = Color.BLACK
         gridColor = Color.DARK_GRAY
@@ -44,7 +44,7 @@ class MapView(private val mainView: MainView) {
     private var lastMousePoint: Point? = null
     private var startCityCoord: Coordinate? = null
     private var endCityCoord: Coordinate? = null
-    private var mainRoute: List<Coordinate>? = null // Stocke l'itinéraire principal
+    private var mainRoute: List<Coordinate>? = null
     private val infoLabel = JLabel("\t Distance: -- km | Temps: -- min \t", SwingConstants.CENTER).apply {
         font = Font("Impact", Font.ROMAN_BASELINE, 20)
         foreground = Color.BLACK
@@ -56,7 +56,7 @@ class MapView(private val mainView: MainView) {
     private val scrollPane = JScrollPane(stationTable).apply {
         background = Color.LIGHT_GRAY
         border = BorderFactory.createLineBorder(Color.DARK_GRAY)
-        preferredSize = Dimension(900, 200) // Réduction de la hauteur du tableau
+        preferredSize = Dimension(900, 200)
     }
 
 
@@ -65,8 +65,8 @@ class MapView(private val mainView: MainView) {
             background = Color.LIGHT_GRAY
             border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
 
-            // Adapter le bouton retour à la largeur
-            val btnBack = JButton("← Retour").apply {
+
+            val btnBack = HomeView.RoundedButton("← Retour").apply {
                 preferredSize = Dimension(150, 40)
                 font = Font("Arial", Font.BOLD, 14)
                 foreground = Color.WHITE
@@ -74,7 +74,7 @@ class MapView(private val mainView: MainView) {
                 border = BorderFactory.createLineBorder(Color.WHITE, 2)
                 isFocusPainted = false
 
-                // Changement de couleur au survol
+
                 addMouseListener(object : java.awt.event.MouseAdapter() {
                     override fun mouseEntered(e: java.awt.event.MouseEvent) {
                         background = Color.DARK_GRAY
@@ -87,14 +87,14 @@ class MapView(private val mainView: MainView) {
             }
             btnBack.addActionListener { mainView.showSearch() }
 
-            // Conteneur du bouton retour, aligné à gauche
+
             val backContainer = JPanel(BorderLayout()).apply {
                 background = Color.LIGHT_GRAY
                 add(btnBack, BorderLayout.WEST)
             }
             add(backContainer, BorderLayout.WEST)
 
-            // Conteneur pour les boutons flèches alignés à droite
+
             val controller = MapController(model)
             val navButtons = controller.createNavigationButtons()
 
@@ -102,7 +102,7 @@ class MapView(private val mainView: MainView) {
 
             add(navButtons, BorderLayout.EAST)
 
-            // Centrer le label info
+
             val infoLabelContainer = JPanel().apply {
                 background = Color.LIGHT_GRAY
                 layout = BorderLayout()
@@ -116,7 +116,7 @@ class MapView(private val mainView: MainView) {
         val mapPanel = JPanel(BorderLayout()).apply {
             background = Color.LIGHT_GRAY
             border = BorderFactory.createLineBorder(Color.DARK_GRAY)
-            preferredSize = Dimension(900, 1100) // Augmenter la hauteur de la carte
+            preferredSize = Dimension(900, 1100)
             add(mapViewer, BorderLayout.CENTER)
         }
 
@@ -127,7 +127,7 @@ class MapView(private val mainView: MainView) {
             background = Color.LIGHT_GRAY
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
             add(infoLabel)
-            add(Box.createRigidArea(Dimension(0, 10))) // Espace entre le label et le tableau
+            add(Box.createRigidArea(Dimension(0, 10)))
             add(scrollPane)
         }
         panel.add(bottomContainer, BorderLayout.SOUTH)
@@ -184,6 +184,9 @@ class MapView(private val mainView: MainView) {
     }
 
     fun updateCities(startCity: String, endCity: String, fuelType: String, hasStore: Boolean, hasToilets: Boolean) {
+
+
+
         val startCoord = controller.getCityCoordinates(startCity)
         val endCoord = controller.getCityCoordinates(endCity)
 
@@ -249,7 +252,7 @@ class MapView(private val mainView: MainView) {
                     }
                 }
             }
-            allStations = allStations.filter { it.geo_point != null }.toMutableList()
+
         }
 
         val filteredStations = allStations.filter { station ->

@@ -4,33 +4,35 @@ import javax.swing.*
 import java.awt.*
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import javax.swing.border.EmptyBorder
 
 class HomeView(private val mainView: MainView) {
     private val panel = JPanel(BorderLayout())
 
     init {
-        // 🎨 Créer un label pour afficher l'image
+
+
         val label = JLabel().apply {
             horizontalAlignment = SwingConstants.CENTER
         }
 
-        // 🎨 Charger l'image depuis les ressources
+
         val imageURL = HomeView::class.java.classLoader.getResource("image/logopage.png")
             ?: throw IllegalArgumentException("Image not found!")
 
         val originalImage = ImageIcon(imageURL).image
 
-        // 🎨 Définir une échelle initiale de 90%
+
         val initialScaleFactor = 1.2
 
-        // 🎨 Ajouter un écouteur pour ajuster la taille de l'image lorsque le panel change de taille
+
         panel.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
-                // Calculer la nouvelle largeur en tenant compte de l'échelle initiale
+
                 val panelWidth = panel.width
                 val panelHeight = panel.height
                 if (panelWidth > 0 && panelHeight > 0) {
-                    // Appliquer la réduction de 10% (90% de la largeur disponible)
+
                     val adjustedWidth = (panelWidth * initialScaleFactor).toInt()
                     val scaledHeight = (adjustedWidth.toDouble() / originalImage.getWidth(null) * originalImage.getHeight(null)).toInt()
                     val resizedImage = originalImage.getScaledInstance(adjustedWidth, scaledHeight, Image.SCALE_SMOOTH)
@@ -40,8 +42,11 @@ class HomeView(private val mainView: MainView) {
         })
 
 
-        // 🎨 Bouton en gris
-        val btnEnter = JButton("Entrer").apply {
+
+
+
+
+        val btnEnter = RoundedButton("Entrer").apply {
             preferredSize = Dimension(100, 50)
             font = Font("Arial", Font.BOLD, 16)
             foreground = Color.WHITE
@@ -77,6 +82,35 @@ class HomeView(private val mainView: MainView) {
 
             add(label, BorderLayout.CENTER)
             add(buttonPanel, BorderLayout.SOUTH)
+        }
+    }
+
+
+    class RoundedButton(text: String) : JButton(text) {
+        init {
+            preferredSize = Dimension(100, 50)
+            font = Font("Arial", Font.BOLD, 16)
+            foreground = Color.WHITE
+            background = Color.GRAY
+            isContentAreaFilled = false
+            isFocusPainted = false
+            border = EmptyBorder(10, 20, 10, 20)
+        }
+
+        override fun paintComponent(g: Graphics) {
+            val g2 = g as Graphics2D
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+
+            g2.color = background
+            g2.fillRoundRect(0, 0, width, height, 20, 20) // (x, y, width, height, arcWidth, arcHeight)
+
+            super.paintComponent(g)
+        }
+
+        override fun paintBorder(g: Graphics) {
+            val g2 = g as Graphics2D
+            g2.color = Color.WHITE
+            g2.drawRoundRect(0, 0, width - 1, height - 1, 20, 20)
         }
     }
 

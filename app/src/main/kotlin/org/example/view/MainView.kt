@@ -2,6 +2,7 @@ package org.example.view
 
 import javax.swing.*
 import java.awt.*
+import javax.swing.border.AbstractBorder
 import javax.swing.border.EmptyBorder
 
 class MainView {
@@ -14,7 +15,7 @@ class MainView {
     private var menuVisible = false
     private val menuButton = JButton("MENU")
 
-    // Couleur pour mode sombre
+
     private val darkGray = Color(64, 64, 64)
     private val white = Color.WHITE
 
@@ -29,10 +30,13 @@ class MainView {
             val homeView = HomeView(this)
             val searchView = SearchView(this)
             val mapView = MapView(this)
+            val loadingView = LoadingView()
+
 
             panelContainer.add(homeView.getPanel(), "HOME")
             panelContainer.add(searchView.getPanel(), "SEARCH")
             panelContainer.add(mapView.getPanel(), "MAP")
+            panelContainer.add(loadingView.getPanel(), "LOADING")
 
             setupMenu()
 
@@ -49,7 +53,7 @@ class MainView {
     }
 
     private fun setupMenu() {
-        menuPanel.background = darkGray // Fond sombre du menu
+        menuPanel.background = darkGray
         menuPanel.border = EmptyBorder(20, 10, 20, 10)
         menuPanel.layout = BoxLayout(menuPanel, BoxLayout.Y_AXIS)
         menuPanel.isVisible = false
@@ -66,23 +70,23 @@ class MainView {
             button.minimumSize = Dimension(buttonWidth, buttonHeight)
             button.maximumSize = Dimension(buttonWidth, buttonHeight)
             button.foreground = white
-            button.background = darkGray // Fond gris foncé
+            button.background = darkGray
             button.isFocusPainted = false
-            button.border = BorderFactory.createLineBorder(white, 1) // Bordure blanche
+            button.border = BorderFactory.createLineBorder(white, 1)
             button.margin = Insets(10, 20, 10, 20)
 
             // Effet au survol
             button.addMouseListener(object : java.awt.event.MouseAdapter() {
                 override fun mouseEntered(e: java.awt.event.MouseEvent) {
-                    button.background = Color(96, 96, 96) // Gris légèrement plus clair
+                    button.background = Color(96, 96, 96)
                 }
 
                 override fun mouseExited(e: java.awt.event.MouseEvent) {
-                    button.background = darkGray // Retour au gris foncé
+                    button.background = darkGray
                 }
             })
 
-            menuPanel.add(Box.createRigidArea(Dimension(0, 10))) // Espacement entre boutons
+            menuPanel.add(Box.createRigidArea(Dimension(0, 10)))
             menuPanel.add(button)
         }
 
@@ -108,34 +112,65 @@ class MainView {
     }
 
 
-    private fun createMenuButton(text: String, action: () -> Unit): JButton {
-        val button = JButton(text)
-        button.font = Font("Arial", Font.BOLD, 14)
-        button.isFocusPainted = false
+    // Bordure Bouton arrondi
+    inner class RoundedBorder(private val radius: Int, private val borderColor: Color) : AbstractBorder() {
+        override fun paintBorder(c: Component, g: Graphics, x: Int, y: Int, width: Int, height: Int) {
+            val g2 = g as Graphics2D
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
 
-        // 🎨 Couleurs mises à jour
-        button.foreground = Color(255, 255, 255) // Texte blanc
-        button.background = Color(75, 0, 130) // Violet foncé
-        button.border = BorderFactory.createLineBorder(Color.WHITE, 2) // Bordure blanche
+            g2.color = borderColor
+            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius)
+        }
+    }
 
-        // 🎨 Effet au survol
-        button.addMouseListener(object : java.awt.event.MouseAdapter() {
-            override fun mouseEntered(e: java.awt.event.MouseEvent) {
-                button.background = Color(0, 51, 102) // Bleu foncé au survol
+    // Bouton Arrondi
+    inner class RoundedButton(text: String, private val bgColor: Color, private val hoverColor: Color, private val action: () -> Unit) : JButton(text) {
+        init {
+            font = Font("Arial", Font.BOLD, 14)
+            foreground = Color.WHITE
+            background = bgColor
+            isContentAreaFilled = false
+            isFocusPainted = false
+            border = RoundedBorder(20, Color.WHITE)
+
+            addMouseListener(object : java.awt.event.MouseAdapter() {
+                override fun mouseEntered(e: java.awt.event.MouseEvent) {
+                    background = hoverColor
+                    repaint()
+                }
+
+                override fun mouseExited(e: java.awt.event.MouseEvent) {
+                    background = bgColor
+                    repaint()
+                }
+            })
+
+
+            addActionListener {
+                action()
+                toggleMenu()
             }
-
-            override fun mouseExited(e: java.awt.event.MouseEvent) {
-                button.background = Color(75, 0, 130) // Retour au violet foncé
-            }
-        })
-
-        // Action à effectuer au clic
-        button.addActionListener {
-            action()
-            toggleMenu() // Ferme le menu après un clic
         }
 
-        return button
+        override fun paintComponent(g: Graphics) {
+            val g2 = g as Graphics2D
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+
+            g2.color = background
+            g2.fillRoundRect(0, 0, width, height, 20, 20)
+
+            super.paintComponent(g)
+        }
+
+        override fun paintBorder(g: Graphics) {
+            val g2 = g as Graphics2D
+            g2.color = Color.WHITE
+            g2.drawRoundRect(0, 0, width - 1, height - 1, 20, 20)
+        }
+    }
+
+    private fun createMenuButton(text: String, action: () -> Unit): JButton {
+        return RoundedButton(text, Color(75, 0, 130), Color(0, 51, 102), action)
     }
 
 
@@ -153,13 +188,22 @@ class MainView {
     fun showSearch() {
         cardLayout.show(panelContainer, "SEARCH")
     }
+    fun showLoading() {
+        cardLayout.show(panelContainer, "LOADING")
+    }
 
     fun showMap(startCity: String, endCity: String, fuelType: String, hasStore: Boolean, hasToilets: Boolean) {
-        val mapView = MapView(this)
-        mapView.updateCities(startCity, endCity, fuelType, hasStore, hasToilets)
-        panelContainer.add(mapView.getPanel(), "MAP")
-        cardLayout.show(panelContainer, "MAP")
+        showLoading()
+
+        SwingUtilities.invokeLater {
+            val mapView = MapView(this)
+            mapView.updateCities(startCity, endCity, fuelType, hasStore, hasToilets)
+            panelContainer.add(mapView.getPanel(), "MAP")
+            cardLayout.show(panelContainer, "MAP")
+        }
     }
+
+
 }
 
 

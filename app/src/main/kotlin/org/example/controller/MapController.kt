@@ -1,6 +1,7 @@
 package org.example.controller
 
 import org.example.model.MapModel
+import org.example.view.HomeView
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionListener
@@ -39,7 +40,7 @@ class MapController(private val model: MapModel) {
 
             val directions = listOf("↑", "←", "↓", "→")
             directions.forEach { dir ->
-                val button = JButton(dir).apply {
+                val button = HomeView.RoundedButton(dir).apply {
                     preferredSize = buttonSize
                     minimumSize = buttonSize
                     maximumSize = buttonSize
@@ -70,7 +71,7 @@ class MapController(private val model: MapModel) {
                 }
 
                 add(button)
-                add(Box.createHorizontalStrut(5)) // Espacement entre les boutons
+                add(Box.createHorizontalStrut(5))
             }
         }
 
@@ -142,14 +143,14 @@ class MapController(private val model: MapModel) {
 
             val coordinatesList = mutableListOf<Coordinate>()
 
-            //"points" est un objet contenant "coordinates"
+
             val pointsObject = pathsArray.getJSONObject(0).getJSONObject("points")
             val pointsArray = pointsObject.getJSONArray("coordinates")
 
             for (i in 0 until pointsArray.length()) {
                 val coord = pointsArray.getJSONArray(i)
-                val lon = coord.getDouble(0) // Longitude
-                val lat = coord.getDouble(1) // Latitude
+                val lon = coord.getDouble(0)
+                val lat = coord.getDouble(1)
                 coordinatesList.add(Coordinate(lat, lon))
             }
 
@@ -163,7 +164,7 @@ class MapController(private val model: MapModel) {
 
     fun getRouteInfo(start: Coordinate, end: Coordinate): Pair<Double, Double>? {
         return try {
-            val apiKey = "43a5fb5f-306c-4957-b1bd-b2c08e18dbc0" // Remplace par ta clé GraphHopper
+            val apiKey = "43a5fb5f-306c-4957-b1bd-b2c08e18dbc0"
             val url = URL("https://graphhopper.com/api/1/route?point=${start.lat},${start.lon}&point=${end.lat},${end.lon}&vehicle=car&key=$apiKey&instructions=false&points_encoded=false")
 
             val connection = url.openConnection() as HttpURLConnection
@@ -186,8 +187,8 @@ class MapController(private val model: MapModel) {
             }
 
             val pathObject = pathsArray.getJSONObject(0)
-            val distance = pathObject.getDouble("distance") / 1000.0 // Convertir en km
-            val time = pathObject.getDouble("time") / 1000.0 / 60.0 // Convertir en minutes
+            val distance = pathObject.getDouble("distance") / 1000.0
+            val time = pathObject.getDouble("time") / 1000.0 / 60.0
 
             logger.info("Distance: ${"%.2f".format(distance)} km, Durée: ${"%.2f".format(time)} min")
             return Pair(distance, time)

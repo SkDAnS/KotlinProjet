@@ -12,8 +12,8 @@ class MapPolyline(route: List<Coordinate>) : MapPolygonImpl(null, "", doubleRout
 
     companion object {
         fun doubleRoute(route: List<Coordinate>): List<Coordinate> {
-            if (route.size < 2) return route // Ne rien faire si moins de 2 points
-            return route + route.reversed() // Aller + retour pour éviter une fermeture visible
+            if (route.size < 2) return route
+            return route + route.reversed()
         }
     }
 }

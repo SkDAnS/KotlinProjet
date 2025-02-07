@@ -52,11 +52,11 @@ fun fetchBackupStations(city: String): List<FuelStation> {
                 return parseXmlStations(extractedXml, city)
             }
 
-            logger.error("❌ Impossible d'extraire le fichier XML du ZIP.")
+            logger.error("Impossible d'extraire le fichier XML du ZIP.")
             emptyList()
         },
         failure = {
-            logger.error("❌ Échec de récupération depuis Roulez-Éco. Aucune donnée disponible.")
+            logger.error("Échec de récupération depuis Roulez-Éco. Aucune donnée disponible.")
             emptyList()
         }
     )
@@ -68,7 +68,7 @@ fun extractXmlFromZip(zipFile: File): File? {
         var entry = zipInputStream.nextEntry
         while (entry != null) {
             if (entry.name.endsWith(".xml")) {
-                logger.info("📂 Extraction du fichier XML : ${entry.name}")
+                logger.info("Extraction du fichier XML : ${entry.name}")
 
                 val extractedFile = File.createTempFile("roulez-eco", ".xml")
                 extractedFile.outputStream().use { it.write(zipInputStream.readBytes()) }
@@ -168,7 +168,7 @@ fun getCoordinatesFromAddress(address: String?, city: String?): List<Double>? {
             }
         },
         failure = {
-            logger.error("❌ Impossible d'obtenir les coordonnées pour l'adresse : $address, $city")
+            logger.error("Impossible d'obtenir les coordonnées pour l'adresse : $address, $city")
             null
         }
     )
